@@ -6,6 +6,8 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
 
+import static java.lang.System.exit;
+
 public enum  BrowserFactory {
     chrome {
         public WebDriver create() {
@@ -30,8 +32,19 @@ public enum  BrowserFactory {
         public WebDriver create() {
             updateProperty("opera");
             OperaOptions options = new OperaOptions();
-            options.setBinary(
-                    "C:\\Users\\Виктор\\AppData\\Local\\Programs\\Opera\\56.0.3051.52\\opera.exe");
+            String operaBinary = System.getProperty("operaBinary");
+            if (operaBinary == null) {
+                System.out.println("You don't point out opera binary");
+                System.out.println("You should use -DoperaBinary=path");
+                System.out.println("Chrome will be used");
+
+                updateProperty("chrome");
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--disable-notifications");
+                return new ChromeDriver(options);
+            }
+            else
+                options.setBinary(operaBinary);
             options.addArguments("--disable-notifications");
             return new OperaDriver(options);
         }

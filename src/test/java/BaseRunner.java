@@ -8,7 +8,7 @@ public class BaseRunner {
     WebDriver driver;
     String baseUrl;
     String browserName = (System.getProperty("browser") == null)
-            ? "opera" : System.getProperty("browser");
+            ? "chrome" : System.getProperty("browser");
 
     @Before
     public void setUp() {

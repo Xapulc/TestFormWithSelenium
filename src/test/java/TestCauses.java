@@ -10,19 +10,15 @@ public class TestCauses extends BaseRunner {
         driver.findElement(By.name("fio")).clear();
         driver.findElement(By.name("fio"))
                 .sendKeys("Иванов");
-        //clickFreeSpace();
 
-        //driver.findElement(By.name("email")).click();
         driver.findElement(By.name("email")).clear();
         driver.findElement(By.name("email"))
                 .sendKeys("testing@test.");
-        //clickFreeSpace();
 
         driver.findElement(By.name("phone")).click();
         driver.findElement(By.name("phone")).clear();
         driver.findElement(By.name("phone"))
                 .sendKeys("+7 (000) 000-00-00");
-        //clickFreeSpace();
 
         driver.findElement(By.name("city")).click();
         driver.findElement(By.name("city")).clear();
