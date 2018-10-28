@@ -7,10 +7,12 @@ import java.util.concurrent.TimeUnit;
 public class BaseRunner {
     WebDriver driver;
     String baseUrl;
+    String browserName = (System.getProperty("browser") == null)
+            ? "opera" : System.getProperty("browser");
 
     @Before
     public void setUp() {
-        driver = BrowserFactory.chrome.create();
+        driver = getDriver();
         driver.manage().window().maximize();
         baseUrl = "https://moscow-job.tinkoff.ru/";
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
@@ -22,4 +24,12 @@ public class BaseRunner {
         driver.quit();
     }
 
+    private WebDriver getDriver() {
+        try {
+            BrowserFactory.valueOf(browserName);
+        } catch (NullPointerException | IllegalArgumentException e) {
+            System.setProperty("browser", browserName);
+        }
+        return BrowserFactory.valueOf(browserName).create();
+    }
 }
