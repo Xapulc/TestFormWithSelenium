@@ -2,21 +2,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
-
 public class TestTinkoffMobile {
-    WebDriver driver;
+    private WebDriver driver;
 
     @Before
     public void setUp() {
@@ -66,9 +61,43 @@ public class TestTinkoffMobile {
     }
 
     @Test
-    public void СhangeRegion() {
+    public void ChangeRegion() {
         String url = "https://www.tinkoff.ru/mobile-operator/tariffs/";
         driver.get(url);
+
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+
+        wait.until(d -> {
+            WebElement region = driver.findElement(By.xpath(
+                    "//span[contains(@class,'regionName') and @data-qa-file='MvnoRegionConfirmation']"));
+            if (region.getText().contains("Москва")) {
+                region = driver.findElement(By.xpath(
+                        "//span[contains(@class,'optionAgreement') and @data-qa-file='MvnoRegionConfirmation']"));
+                region.click();
+            } else {
+                region = driver.findElement(By.xpath(
+                        "//span[contains(@class,'optionRejection') and @data-qa-file='MvnoRegionConfirmation']"));
+                region.click();
+
+                region = driver.findElement(By.xpath(
+                        "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup' and @text()='Москва']"));
+                region.click();
+            }
+            return true;
+        });
+
+        WebElement region = driver.findElement(By.xpath(
+                "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
+        if (region.getText().contains("Москва"))
+            System.out.println("Правильный регион");
+
+        driver.navigate().refresh();
+
+        region = driver.findElement(By.xpath(
+                "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
+        if (region.getText().contains("Москва"))
+            System.out.println("Регион сохранился после обновлаения страницы");
+
 
     }
 
