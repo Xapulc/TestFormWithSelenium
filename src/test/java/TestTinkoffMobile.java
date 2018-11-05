@@ -1,4 +1,5 @@
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -65,6 +66,8 @@ public class TestTinkoffMobile {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        Assert.assertSame("https://www.tinkoff.ru/mobile-operator/tariffs/", driver.getCurrentUrl());
     }
 
     @Test
@@ -93,19 +96,17 @@ public class TestTinkoffMobile {
             return true;
         });
 
-        checkRegion("Москва");
+        Assert.assertTrue(checkRegion("Москва"));
 
         driver.navigate().refresh();
-
-        System.out.println("Страница обновлена");
-        checkRegion("Москва");
+        Assert.assertTrue(checkRegion("Москва"));
 
         String moscowSale = getAmountSale();
-        changeRegion("Краснодар");
+        Assert.assertTrue(checkRegion("Краснодар"));
         String krasnodarSale = getAmountSale();
 
         System.out.println("Дефолтные параметры");
-        compareSales(krasnodarSale, moscowSale);
+        Assert.assertTrue(!compareSales(krasnodarSale, moscowSale));
 
         chooseMaxFields();
         krasnodarSale = getAmountSale();
@@ -114,7 +115,25 @@ public class TestTinkoffMobile {
         moscowSale = getAmountSale();
 
         System.out.println("Максимальные параметры");
-        compareSales(krasnodarSale, moscowSale);
+        Assert.assertTrue(compareSales(krasnodarSale, moscowSale));
+    }
+
+    @Test
+    public void DisableButton() {
+        String url = "https://www.tinkoff.ru/mobile-operator/tariffs/";
+        driver.get(url);
+
+        chooseEmpty("calls");
+        chooseEmpty("internet");
+
+        for (WebElement field : driver.findElements(By.xpath(
+                "//*[contains(@class,'checkbox-directive')]//*[contains(@class,'checked')]"))){
+            field.click();
+        }
+
+        Assert.assertTrue(getAmountSale().contains("0 \u20BD"));
+
+        Assert.assertTrue(!driver.findElements(By.xpath("//button[@disabled]")).isEmpty());
     }
 
     private void chooseMaxFields() {
@@ -137,9 +156,20 @@ public class TestTinkoffMobile {
         field.click();
     }
 
+    private void chooseEmpty(String service) {
+        String addService = "//*[@name='" + service + "']/../..";
+        WebElement field = driver.findElement(By.xpath(addService
+                + "//*[contains(@class,'title-flex-text') and @data-qa-file='UISelectTitle']"));
+        field.click();
+
+        field = driver.findElement(By.xpath(addService
+                + "//*[contains(@class,'dropdown') and contains(text(),'0' ) and not(contains(text(),'00'))]"));
+        field.click();
+    }
+
     private String getAmountSale() {
         try {
-            Thread.sleep(500);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -148,20 +178,14 @@ public class TestTinkoffMobile {
                 "//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]")).getText();
     }
 
-    private void compareSales(String sale1, String sale2) {
-        if (sale1.equals(sale2))
-            System.out.println("Цены одинаковые");
-        else
-            System.out.println("Цены разные");
+    private boolean compareSales(String sale1, String sale2) {
+        return sale1.equals(sale2);
     }
 
-    private void checkRegion(String city) {
+    private boolean checkRegion(String city) {
         WebElement region = driver.findElement(By.xpath(
                 "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
-        if (region.getText().contains(city))
-            System.out.println("Правильный регион");
-        else
-            System.out.println("Неправильный регион");
+        return region.getText().contains(city);
     }
 
     private void changeRegion(String city) {
@@ -169,10 +193,15 @@ public class TestTinkoffMobile {
                 "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
         region.click();
 
-        region = driver.findElement(By.xpath(
-                "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup'"
-                        + " and text()='" + city + "']"));
-        region.click();
+        WebDriverWait wait = new WebDriverWait(driver, 10);
+        wait.until(d -> {
+            WebElement regionLambda;
+            regionLambda = driver.findElement(By.xpath(
+                    "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup'"
+                            + " and text()='" + city + "']"));
+            regionLambda.click();
+            return true;
+        });
     }
 
     @After
