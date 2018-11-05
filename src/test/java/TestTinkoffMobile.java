@@ -8,8 +8,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestTinkoffMobile {
     private WebDriver driver;
@@ -58,16 +59,11 @@ public class TestTinkoffMobile {
             return check;
         });
 
+        assertEquals("https://www.tinkoff.ru/mobile-operator/tariffs/",
+                driver.getCurrentUrl());
+
         driver.switchTo().window(initTitle);
         driver.close();
-
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Assert.assertSame("https://www.tinkoff.ru/mobile-operator/tariffs/", driver.getCurrentUrl());
     }
 
     @Test
@@ -102,11 +98,11 @@ public class TestTinkoffMobile {
         Assert.assertTrue(checkRegion("Москва"));
 
         String moscowSale = getAmountSale();
+        changeRegion("Краснодар");
         Assert.assertTrue(checkRegion("Краснодар"));
         String krasnodarSale = getAmountSale();
 
-        System.out.println("Дефолтные параметры");
-        Assert.assertTrue(!compareSales(krasnodarSale, moscowSale));
+        Assert.assertTrue(!krasnodarSale.equals(moscowSale));
 
         chooseMaxFields();
         krasnodarSale = getAmountSale();
@@ -114,8 +110,7 @@ public class TestTinkoffMobile {
         chooseMaxFields();
         moscowSale = getAmountSale();
 
-        System.out.println("Максимальные параметры");
-        Assert.assertTrue(compareSales(krasnodarSale, moscowSale));
+        assertEquals(krasnodarSale, moscowSale);
     }
 
     @Test
@@ -123,63 +118,61 @@ public class TestTinkoffMobile {
         String url = "https://www.tinkoff.ru/mobile-operator/tariffs/";
         driver.get(url);
 
-        chooseEmpty("calls");
-        chooseEmpty("internet");
-
-        for (WebElement field : driver.findElements(By.xpath(
-                "//*[contains(@class,'checkbox-directive')]//*[contains(@class,'checked')]"))){
-            field.click();
-        }
-
+        chooseMinFields();
         Assert.assertTrue(getAmountSale().contains("0 \u20BD"));
-
-        Assert.assertTrue(!driver.findElements(By.xpath("//button[@disabled]")).isEmpty());
+        Assert.assertTrue(Button.isDisable());
     }
 
     private void chooseMaxFields() {
-        chooseUnlimited("calls");
-        chooseUnlimited("internet");
+        Select.driver = driver;
+        CheckBox.driver = driver;
 
-        WebElement field = driver.findElement(By.xpath(
-                "//*[contains(@class,'checkbox-directive')]/*[@for='2048']"));
-        field.click();
+        Select calls = new Select("Звонки", "Безлимит");
+        Select internet = new Select("Интернет", "Безлимит");
+
+        calls.choose();
+        internet.choose();
+
+        CheckBox sms = new CheckBox("SMS");
+        CheckBox modem = new CheckBox("модем");
+
+        sms.setActive(true);
+        modem.setActive(true);
     }
 
-    private void chooseUnlimited(String service) {
-        String addService = "//*[@name='" + service + "']/../..";
-        WebElement field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'title-flex-text') and @data-qa-file='UISelectTitle']"));
-        field.click();
+    private void chooseMinFields() {
+        Select.driver = driver;
+        CheckBox.driver = driver;
+        Button.driver = driver;
 
-        field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'dropdown') and contains(text(),'Безлимит')]"));
-        field.click();
-    }
+        Select calls = new Select("Звонки", "0 минут");
+        Select internet = new Select("Интернет", "0 ГБ");
 
-    private void chooseEmpty(String service) {
-        String addService = "//*[@name='" + service + "']/../..";
-        WebElement field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'title-flex-text') and @data-qa-file='UISelectTitle']"));
-        field.click();
+        calls.choose();
+        internet.choose();
 
-        field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'dropdown') and contains(text(),'0' ) and not(contains(text(),'00'))]"));
-        field.click();
+        CheckBox messenger = new CheckBox("Мессенджеры");
+        CheckBox socialNetwork = new CheckBox("Социальные сети");
+        CheckBox music = new CheckBox("Музыка");
+        CheckBox video = new CheckBox("Видео");
+        CheckBox sms = new CheckBox("SMS");
+
+        messenger.setActive(false);
+        socialNetwork.setActive(false);
+        music.setActive(false);
+        video.setActive(false);
+        sms.setActive(false);
     }
 
     private String getAmountSale() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
         return driver.findElement(By.xpath(
                 "//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]")).getText();
-    }
-
-    private boolean compareSales(String sale1, String sale2) {
-        return sale1.equals(sale2);
     }
 
     private boolean checkRegion(String city) {
@@ -203,6 +196,25 @@ public class TestTinkoffMobile {
             return true;
         });
     }
+
+    /*@Test
+    public void download() {
+        String url = "https://www.tinkoff.ru/mobile-operator/documents/";
+        driver.get(url);
+
+        WebElement elem = driver.findElement(By.xpath(
+                "//*[contains(text(),'Удвоим минуты и гигабайты')]"));
+        elem.click();
+
+        File file = new File("buf.pdf");
+        try {
+            FileUtils.copyURLToFile(new URL("blob:chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/4d34808f-595f-4a6f-8ab5-4eaf84920d11"), file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Assert.assertTrue(file.exists());
+    }*/
 
     @After
     public void tearDown() {
