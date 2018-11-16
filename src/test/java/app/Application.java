@@ -1,15 +1,15 @@
+package app;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.TimeUnit;
 
 public class Application {
-    private WebDriver driver;
-    private WebDriverWait wait;
+    protected WebDriver driver;
+    protected WebDriverWait wait;
     private String browserName = "chrome";
 
     private void defaultConstruct() {
@@ -18,17 +18,25 @@ public class Application {
         wait = new WebDriverWait(driver, 10);
     }
 
-    Application() {
-        System.out.println("Start default constr");
+    protected Application() {
         driver = getDriver(browserName);
         defaultConstruct();
     }
 
-    Application(String browserName) {
-        System.out.println("Start browser constr");
+    protected Application(String browserName) {
         this.browserName = browserName;
         driver = getDriver(browserName);
         defaultConstruct();
+    }
+
+    protected Application(Application app) {
+        app.copy(this);
+    }
+
+    public void copy(Application app) {
+        app.browserName = browserName;
+        app.driver = driver;
+        app.wait = wait;
     }
 
     private WebDriver getDriver(String browserName) {

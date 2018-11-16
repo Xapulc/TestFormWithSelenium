@@ -1,13 +1,12 @@
+package app;
+
 import org.junit.After;
 import org.junit.Before;
-import org.openqa.selenium.WebDriver;
-
-import java.util.concurrent.TimeUnit;
 
 public class BaseRunner {
-    String browserName = (System.getProperty("browser") == null)
+    protected String browserName = (System.getProperty("browser") == null)
             ? "chrome" : System.getProperty("browser");
-    Application app = new Application(browserName);
+    protected app.Application app = new app.Application(browserName);
 
     @Before
     public void setUp() {}
