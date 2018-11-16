@@ -1,103 +1,40 @@
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestTinkoffMobile {
-    private WebDriver driver;
-
-    @Before
-    public void setUp() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--disable-notifications");
-        //options.addArguments("--incognito");
-        driver = new ChromeDriver(options);
-
-        driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
-    }
+public class TestTinkoffMobile extends BaseRunner {
 
     @Test
     public void SwapBetweenPages() {
-        WebDriverWait wait = new WebDriverWait(driver, 10);
+        app.getPage("https://www.google.ru/");
+        app.sendKeys("//form[@role='search']//input[@name='q']", "мобайл тинькофф");
+        app.click("//form[@name='f']//*[contains(text(),'тарифы')]/..", true);
 
-        String url = "https://www.google.ru/";
-        driver.get(url);
-
-        WebElement search = driver.findElement(By.xpath
-                ("//form[@role='search']//input[@name='q']"));
-        search.sendKeys("мобайл тинькофф");
-
-        wait.until(d->{
-            WebElement searchTariff = driver.findElement(By.xpath
-                    ("//form[@name='f']//*[contains(text(),'тарифы')]/.."));
-            searchTariff.click();
-            return true;
-        });
-
-        String initTitle = driver.getWindowHandle();
-
-        search = driver.findElement(By.xpath
-                ("//*[contains(@href,'tinkoff')]//*[text()='Тарифы Тинькофф Мобайл']"));
-        search.click();
-
-        wait.until(d -> {
-            boolean check = false;
-            for (String title : driver.getWindowHandles()) {
-                driver.switchTo().window(title);
-                check = d.getTitle().equals("Тарифы Тинькофф Мобайл");
-            }
-            return check;
-        });
+        String initTitle = app.getWindowHandle();
+        app.click("//*[contains(@href,'tinkoff')]//*[text()='Тарифы Тинькофф Мобайл']");
+        app.checkWindowHandle("Тарифы Тинькофф Мобайл");
 
         assertEquals("https://www.tinkoff.ru/mobile-operator/tariffs/",
-                driver.getCurrentUrl());
+                app.getCurrentUrl());
 
-        driver.switchTo().window(initTitle);
-        driver.close();
+        app.switchToWindow(initTitle);
+        app.close();
     }
 
     @Test
     public void ChangeRegion() {
-        String url = "https://www.tinkoff.ru/mobile-operator/tariffs/";
-        driver.get(url);
+        app.getPage("https://www.tinkoff.ru/mobile-operator/tariffs/");
 
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-
-        wait.until(d -> {
-            WebElement region = driver.findElement(By.xpath(
-                    "//span[contains(@class,'regionName') and @data-qa-file='MvnoRegionConfirmation']"));
-            if (region.getText().contains("Москва")) {
-                region = driver.findElement(By.xpath(
-                        "//span[contains(@class,'optionAgreement') and @data-qa-file='MvnoRegionConfirmation']"));
-                region.click();
-            } else {
-                region = driver.findElement(By.xpath(
-                        "//span[contains(@class,'optionRejection') and @data-qa-file='MvnoRegionConfirmation']"));
-                region.click();
-
-                region = driver.findElement(By.xpath(
-                        "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup' and text()='Москва']"));
-                region.click();
-            }
-            return true;
-        });
+        app.chooseMoscow();
 
         Assert.assertTrue(checkRegion("Москва"));
-
-        driver.navigate().refresh();
+        app.update();
         Assert.assertTrue(checkRegion("Москва"));
 
         String moscowSale = getAmountSale();
+
         changeRegion("Краснодар");
         Assert.assertTrue(checkRegion("Краснодар"));
         String krasnodarSale = getAmountSale();
@@ -115,17 +52,17 @@ public class TestTinkoffMobile {
 
     @Test
     public void DisableButton() {
-        String url = "https://www.tinkoff.ru/mobile-operator/tariffs/";
-        driver.get(url);
+        app.getPage("https://www.tinkoff.ru/mobile-operator/tariffs/");
 
         chooseMinFields();
-        Assert.assertTrue(getAmountSale().contains("0 \u20BD"));
+        char ruble = '\u20BD';
+        Assert.assertTrue(getAmountSale().contains("0 " + ruble));
         Assert.assertTrue(Button.isDisable());
     }
 
     private void chooseMaxFields() {
-        Select.driver = driver;
-        CheckBox.driver = driver;
+        Select.driver = app.getDriver();
+        CheckBox.driver = app.getDriver();
 
         Select calls = new Select("Звонки", "Безлимит");
         Select internet = new Select("Интернет", "Безлимит");
@@ -141,9 +78,9 @@ public class TestTinkoffMobile {
     }
 
     private void chooseMinFields() {
-        Select.driver = driver;
-        CheckBox.driver = driver;
-        Button.driver = driver;
+        Select.driver = app.getDriver();
+        CheckBox.driver = app.getDriver();
+        Button.driver = app.getDriver();
 
         Select calls = new Select("Звонки", "0 минут");
         Select internet = new Select("Интернет", "0 ГБ");
@@ -171,53 +108,22 @@ public class TestTinkoffMobile {
             e.printStackTrace();
         }
 
-        return driver.findElement(By.xpath(
-                "//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]")).getText();
+        return app.getText("//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]");
     }
 
     private boolean checkRegion(String city) {
-        WebElement region = driver.findElement(By.xpath(
-                "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
-        return region.getText().contains(city);
+        String region = app.getText("//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']");
+        return region.contains(city);
     }
 
     private void changeRegion(String city) {
-        WebElement region = driver.findElement(By.xpath(
-                "//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']"));
-        region.click();
-
-        WebDriverWait wait = new WebDriverWait(driver, 10);
-        wait.until(d -> {
-            WebElement regionLambda;
-            regionLambda = driver.findElement(By.xpath(
-                    "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup'"
-                            + " and text()='" + city + "']"));
-            regionLambda.click();
-            return true;
-        });
+        app.click("//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']");
+        app.click("//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup']"
+                + "/*[contains(text(),'" + city + "')]", true);
     }
-
-    /*@Test
-    public void download() {
-        String url = "https://www.tinkoff.ru/mobile-operator/documents/";
-        driver.get(url);
-
-        WebElement elem = driver.findElement(By.xpath(
-                "//*[contains(text(),'Удвоим минуты и гигабайты')]"));
-        elem.click();
-
-        File file = new File("buf.pdf");
-        try {
-            FileUtils.copyURLToFile(new URL("blob:chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/4d34808f-595f-4a6f-8ab5-4eaf84920d11"), file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Assert.assertTrue(file.exists());
-    }*/
 
     @After
     public void tearDown() {
-        driver.quit();
+        app.quit();
     }
 }

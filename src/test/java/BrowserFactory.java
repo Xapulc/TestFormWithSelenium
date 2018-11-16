@@ -14,6 +14,7 @@ public enum  BrowserFactory {
             updateProperty("chrome");
             ChromeOptions options = new ChromeOptions();
             options.addArguments("--disable-notifications");
+            //options.addArguments("--incognito");
             return new ChromeDriver(options);
         }
     },
