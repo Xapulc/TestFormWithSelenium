@@ -1,5 +1,8 @@
 package pages;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GoogleResultPage extends Page {
     GoogleResultPage() {
         super();
@@ -11,5 +14,6 @@ public class GoogleResultPage extends Page {
 
     public void clickRow(String name) {
         click("//*[text()='" + name + "']");
+        logger.info("На странице поиска выбран: " + name);
     }
 }

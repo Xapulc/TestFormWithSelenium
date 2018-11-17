@@ -27,17 +27,28 @@ public class TinkoffTariffPage extends Page {
             }
             return true;
         });
+        logger.info("Выбран регион: " + city);
     }
 
     public void changeRegion(String city) {
         click("//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']");
         click("//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup']"
                 + "/*[contains(text(),'" + city + "')]", true);
+        logger.info("РЕгион изменен на: " + city);
     }
 
     public boolean checkRegion(String city) {
         String region = getText("//div[contains(@class,'title') and @data-qa-file='MvnoRegionConfirmation']");
-        return region.contains(city);
+
+        if (region.contains(city)) {
+            logger.info("Корректный регион");
+            return true;
+        } else {
+            logger.info("Неправильный регион:\n"
+                    + "Актуальный: " + region + "\n"
+                    + "Текущий: " + city);
+            return false;
+        }
     }
 
     public String getAmountSale() {
@@ -47,47 +58,46 @@ public class TinkoffTariffPage extends Page {
             e.printStackTrace();
         }
 
-        return getText("//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]");
+        String amountSale = getText("//*[@data-qa-file='FormFieldWrapper']/*[contains(@class,'amountTitle')]");
+        logger.info("Итоговая стоимость: " + amountSale);
+        return amountSale;
     }
 
-    public void chooseMaxFields() {
-        Select.driver = getDriver();
-        CheckBox.driver = getDriver();
-
-        Select calls = new Select("Звонки", "Безлимит");
-        Select internet = new Select("Интернет", "Безлимит");
+    public void chooseMaxFields(app.Application app) {
+        Select calls = new Select("Звонки", "Безлимит", app);
+        Select internet = new Select("Интернет", "Безлимит", app);
 
         calls.choose();
         internet.choose();
 
-        CheckBox sms = new CheckBox("SMS");
-        CheckBox modem = new CheckBox("модем");
+        CheckBox sms = new CheckBox("SMS", app);
+        CheckBox modem = new CheckBox("модем", app);
 
         sms.setActive(true);
         modem.setActive(true);
+
+        logger.info("Выбраны максимальные параметры");
     }
 
-    public void chooseMinFields() {
-        Select.driver = getDriver();
-        CheckBox.driver = getDriver();
-        Button.driver = getDriver();
-
-        Select calls = new Select("Звонки", "0 минут");
-        Select internet = new Select("Интернет", "0 ГБ");
+    public void chooseMinFields(app.Application app) {
+        Select calls = new Select("Звонки", "0 минут", app);
+        Select internet = new Select("Интернет", "0 ГБ", app);
 
         calls.choose();
         internet.choose();
 
-        CheckBox messenger = new CheckBox("Мессенджеры");
-        CheckBox socialNetwork = new CheckBox("Социальные сети");
-        CheckBox music = new CheckBox("Музыка");
-        CheckBox video = new CheckBox("Видео");
-        CheckBox sms = new CheckBox("SMS");
+        CheckBox messenger = new CheckBox("Мессенджеры", app);
+        CheckBox socialNetwork = new CheckBox("Социальные сети", app);
+        CheckBox music = new CheckBox("Музыка", app);
+        CheckBox video = new CheckBox("Видео", app);
+        CheckBox sms = new CheckBox("SMS", app);
 
         messenger.setActive(false);
         socialNetwork.setActive(false);
         music.setActive(false);
         video.setActive(false);
         sms.setActive(false);
+
+        logger.info("Выбраны минимальные параметры");
     }
 }

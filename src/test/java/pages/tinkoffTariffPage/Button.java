@@ -1,14 +1,21 @@
 package pages.tinkoffTariffPage;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+public class Button extends TinkoffTariffPage {
+    Button() {
+        super();
+    }
 
-public class Button {
-    public static WebDriver driver = null;
+    public Button(app.Application app) {
+        super(app);
+    }
 
-    Button() {}
-
-    public static boolean isDisable() {
-        return !driver.findElements(By.xpath("//button[@disabled]")).isEmpty();
+    public boolean isDisable() {
+        if (isExistElement("//button[@disabled]")) {
+            logger.info("Кнопка неактивна");
+            return true;
+        } else {
+            logger.info("Кнопка активна");
+            return false;
+        }
     }
 }

@@ -8,7 +8,6 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.opera.OperaDriver;
 import org.openqa.selenium.opera.OperaOptions;
 
-import static java.lang.System.exit;
 
 public enum  BrowserFactory {
     chrome {

@@ -1,21 +1,22 @@
 package pages.tinkoffTariffPage;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.concurrent.TimeUnit;
-
-public class CheckBox {
-    public static WebDriver driver = null;
+public class CheckBox extends TinkoffTariffPage {
     private String service;
     private WebElement field;
 
     CheckBox() {
-        field = null;
+        super();
     }
 
-    CheckBox(String service) {
+    public CheckBox(app.Application app) {
+        super(app);
+    }
+
+    CheckBox(String service, app.Application app) {
+        super(app);
         field = driver.findElement(By.xpath(
                 "//*[contains(@class,'checkbox-directive')]"
                         + "//*[contains(text(),'" + service + "')]"));
@@ -24,24 +25,21 @@ public class CheckBox {
 
     public void setActive(boolean mode) {
         if (mode != getValue()) {
-
             field.click();
         }
+
+        logger.info("У сервиса " + service
+                + " установлен режим " + mode);
     }
 
-    public String getText() {
-        return field.getText();
-    }
-
-    public boolean getValue() {
+    private boolean getValue() {
         boolean value;
-        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-        value = !driver.findElements(By.xpath(
-                "//*[contains(@class,'checkbox-directive')]"
-                        + "//*[contains(@class,'checked')]"
-                        + "//*[contains(text(),'" + service + "')]")).isEmpty();
+        setTimeout(3);
+        value = isExistElement("//*[contains(@class,'checkbox-directive')]"
+                + "//*[contains(@class,'checked')]"
+                + "//*[contains(text(),'" + service + "')]");
 
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        setTimeout(30);
         return value;
     }
 }

@@ -13,6 +13,7 @@ public class Page extends Application {
 
     public void getPage(String url) {
         driver.get(url);
+        logger.info("Открыта вкладка " + driver.getTitle());
     }
 
     public void update() {

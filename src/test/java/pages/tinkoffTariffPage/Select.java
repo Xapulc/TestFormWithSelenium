@@ -1,17 +1,19 @@
 package pages.tinkoffTariffPage;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-
-public class Select {
-    public static WebDriver driver = null;
+public class Select extends TinkoffTariffPage {
     private String service;
     private String mode;
 
-    Select() {}
+    Select() {
+        super();
+    }
 
-    Select(String service, String mode) {
+    public Select(app.Application app) {
+        super(app);
+    }
+
+    Select(String service, String mode, app.Application app) {
+        super(app);
         this.service = service;
         this.mode = mode;
 
@@ -23,19 +25,16 @@ public class Select {
 
     public void choose() {
         String addService = "//*[@name='" + service + "']/../..";
-        WebElement field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'title-flex-text') and @data-qa-file='UISelectTitle']"));
+        click(addService
+                + "//*[contains(@class,'title-flex-text') and @data-qa-file='UISelectTitle']");
+        click(addService
+                + "//*[contains(@class,'dropdown') and contains(text(),'" + mode + "')]");
 
-        field.click();
-
-        field = driver.findElement(By.xpath(addService
-                + "//*[contains(@class,'dropdown') and contains(text(),'" + mode + "')]"));
-        field.click();
+        logger.info("В выпадающем окне " + service
+                + "выбран пункт " + mode);
     }
 
     public String getMode() {
         return mode;
     }
-
-
 }

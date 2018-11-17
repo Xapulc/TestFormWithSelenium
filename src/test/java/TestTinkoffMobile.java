@@ -4,11 +4,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import pages.GooglePage;
 import pages.GoogleResultPage;
+import pages.tinkoffTariffPage.Button;
 import pages.tinkoffTariffPage.TinkoffTariffPage;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestTinkoffMobile extends BaseRunner {
+
     @Test
     public void SwapBetweenPages() {
         GooglePage googlePage = new GooglePage(app);
@@ -30,40 +32,41 @@ public class TestTinkoffMobile extends BaseRunner {
 
     @Test
     public void ChangeRegion() {
-        TinkoffTariffPage tinkoffPage = new TinkoffTariffPage(app);
-        tinkoffPage.open();
-        tinkoffPage.chooseRegion("Москва");
+        TinkoffTariffPage tinkoffTariffPage = new TinkoffTariffPage(app);
+        tinkoffTariffPage.open();
+        tinkoffTariffPage.chooseRegion("Москва");
 
-        Assert.assertTrue(tinkoffPage.checkRegion("Москва"));
+        Assert.assertTrue(tinkoffTariffPage.checkRegion("Москва"));
         app.update();
-        Assert.assertTrue(tinkoffPage.checkRegion("Москва"));
+        Assert.assertTrue(tinkoffTariffPage.checkRegion("Москва"));
 
-        String moscowSale = tinkoffPage.getAmountSale();
+        String moscowSale = tinkoffTariffPage.getAmountSale();
 
-        tinkoffPage.changeRegion("Краснодар");
-        Assert.assertTrue(tinkoffPage.checkRegion("Краснодар"));
-        String krasnodarSale = tinkoffPage.getAmountSale();
+        tinkoffTariffPage.changeRegion("Краснодар");
+        Assert.assertTrue(tinkoffTariffPage.checkRegion("Краснодар"));
+        String krasnodarSale = tinkoffTariffPage.getAmountSale();
 
         Assert.assertTrue(!krasnodarSale.equals(moscowSale));
 
-        tinkoffPage.chooseMaxFields();
-        krasnodarSale = tinkoffPage.getAmountSale();
-        tinkoffPage.changeRegion("Москва");
-        tinkoffPage.chooseMaxFields();
-        moscowSale = tinkoffPage.getAmountSale();
+        tinkoffTariffPage.chooseMaxFields(app);
+        krasnodarSale = tinkoffTariffPage.getAmountSale();
+        tinkoffTariffPage.changeRegion("Москва");
+        tinkoffTariffPage.chooseMaxFields(app);
+        moscowSale = tinkoffTariffPage.getAmountSale();
 
         assertEquals(krasnodarSale, moscowSale);
     }
 
     @Test
     public void DisableButton() {
+        Button button = new Button(app);
         TinkoffTariffPage tinkoffPage = new TinkoffTariffPage(app);
         tinkoffPage.open();
 
-        tinkoffPage.chooseMinFields();
+        tinkoffPage.chooseMinFields(app);
         char ruble = '\u20BD';
         Assert.assertTrue(tinkoffPage.getAmountSale().contains("0 " + ruble));
-        Assert.assertTrue(pages.tinkoffTariffPage.Button.isDisable());
+        Assert.assertTrue(button.isDisable());
     }
 
     @After

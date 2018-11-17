@@ -4,10 +4,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
 public class Application {
+    protected Logger logger;
+
     protected WebDriver driver;
     protected WebDriverWait wait;
     private String browserName = "chrome";
@@ -16,6 +20,7 @@ public class Application {
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
         wait = new WebDriverWait(driver, 10);
+        logger = LoggerFactory.getLogger(Application.class);
     }
 
     protected Application() {
@@ -33,10 +38,11 @@ public class Application {
         app.copy(this);
     }
 
-    public void copy(Application app) {
+    private void copy(Application app) {
         app.browserName = browserName;
         app.driver = driver;
         app.wait = wait;
+        app.logger = logger;
     }
 
     private WebDriver getDriver(String browserName) {
@@ -50,6 +56,7 @@ public class Application {
 
     public void quit() {
         driver.quit();
+        logger.info("Браузер заркыт");
     }
 
     public void getPage(String url) {
@@ -60,7 +67,7 @@ public class Application {
         return driver.findElement(By.xpath(xpath));
     }
 
-    public void sendKeys(String xpath, String value) {
+    protected void sendKeys(String xpath, String value) {
         WebElement elem = driver.findElement(By.xpath(xpath));
         elem.sendKeys(value);
     }
@@ -70,11 +77,11 @@ public class Application {
         searchTariff.click();
     }
 
-    public void click(String xpath) {
+    protected void click(String xpath) {
         click(xpath, false);
     }
 
-    public void click(String xpath, boolean isWaiting) {
+    protected void click(String xpath, boolean isWaiting) {
         if (isWaiting) {
             wait.until(d->{
                 clickHelper(xpath);
@@ -83,17 +90,6 @@ public class Application {
         } else {
             clickHelper(xpath);
         }
-    }
-
-    public void checkWindowHandle(String handle) {
-        wait.until(d -> {
-            boolean check = false;
-            for (String title : driver.getWindowHandles()) {
-                driver.switchTo().window(title);
-                check = d.getTitle().equals("Тарифы Тинькофф Мобайл");
-            }
-            return check;
-        });
     }
 
     public String getWindowHandle() {
@@ -106,42 +102,32 @@ public class Application {
 
     public void switchToWindow(String title) {
         driver.switchTo().window(title);
+        logger.info("Активная вкладка изменена");
     }
 
     public void close() {
         driver.close();
-    }
-
-    public void chooseMoscow() {
-        wait.until(d -> {
-            WebElement region = driver.findElement(By.xpath(
-                    "//span[contains(@class,'regionName') and @data-qa-file='MvnoRegionConfirmation']"));
-            if (region.getText().contains("Москва")) {
-                region = driver.findElement(By.xpath(
-                        "//span[contains(@class,'optionAgreement') and @data-qa-file='MvnoRegionConfirmation']"));
-                region.click();
-            } else {
-                region = driver.findElement(By.xpath(
-                        "//span[contains(@class,'optionRejection') and @data-qa-file='MvnoRegionConfirmation']"));
-                region.click();
-
-                region = driver.findElement(By.xpath(
-                        "//*[contains(@class,'_region_') and @data-qa-file='MobileOperatorRegionsPopup' and text()='Москва']"));
-                region.click();
-            }
-            return true;
-        });
+        logger.info("Активная вкладка закрыта");
     }
 
     public void update() {
         driver.navigate().refresh();
+        logger.info("Страница обновлена");
     }
 
     public WebDriver getDriver() {
         return driver;
     }
 
-    public String getText(String xpath) {
+    protected String getText(String xpath) {
         return driver.findElement(By.xpath(xpath)).getText();
+    }
+
+    protected boolean isExistElement(String xpath) {
+        return !driver.findElements(By.xpath(xpath)).isEmpty();
+    }
+
+    protected void setTimeout(int sec) {
+        driver.manage().timeouts().implicitlyWait(sec, TimeUnit.SECONDS);
     }
 }

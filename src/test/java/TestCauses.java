@@ -4,7 +4,6 @@ import pages.TinkoffJobPage;
 
 import static org.junit.Assert.assertEquals;
 
-//Требует фикса, не работает
 public class TestCauses extends BaseRunner {
     @Test
     public void TestClickWithFill() {
